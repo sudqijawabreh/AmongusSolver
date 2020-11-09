@@ -181,7 +181,7 @@ def SolveO2():
     screen = pyautogui.screenshot()
     img = np.array(screen)
     img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-    #img = cv.imread('nored.png')
+    img = cv.imread('wrong4.png')
     keys = (contrs.GetO2NumKeys(img))
     numbers = (contrs.GetO2Numbers(img))
     print(keys)

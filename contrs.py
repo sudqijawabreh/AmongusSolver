@@ -6,7 +6,7 @@ import time
 import pyautogui
 import imutils
 import importlib
-
+debug = True
 #moduleName = input('O2')
 #importlib.import_module(moduleName)
 def show(image):
@@ -82,24 +82,25 @@ def GetO2Numbers(image):
     eroded = cv.erode(thresh,kernel,iterations = 1)
     inverted = (255 - eroded) 
     #inverted = (255 - thresh) 
-    #showImage('image',inverted)
+    if debug:
+        showImage('image',inverted)
     contours, hierarchy = cv.findContours(inverted, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     count = 0
     areas = []
     for i,cont in zip(range(len(contours)),contours):
         area = cv.contourArea(cont)
         ratio = imgArea / (area+1)
-        print(ratio)
+        #print(ratio)
         if (ratio > 30  and ratio < 33):
-            print('bingo')
+            #print('bingo')
             areas.append((i,cont))
-    print(areas)
     #cv.drawContours(s, [areas[0][1]], -1, (0,255,0), 3)
     mask = np.zeros_like(thresh)
     cv.drawContours(mask, [areas[0][1]], -1, 255, -1)
     #img1 = cv.imread('o22.png',0)
     ret,big = cv.threshold(img,95,255,cv.THRESH_BINARY)
-    #showImage('thresh',big)
+    if debug:
+        showImage('thresh',big)
     out = np.zeros_like(big)
     out[mask == 255] = big[mask == 255]
     kernel = np.ones((1,1),np.uint8)
@@ -107,18 +108,19 @@ def GetO2Numbers(image):
     #anotherImage = out
     anotherImage = (255 - anotherImage)
     #out= img[mask == 255]
-    cv.imwrite("./thresh.png",anotherImage)
-    #showImage('out',anotherImage)
+    if debug:
+        showImage('out',anotherImage)
     contours, hierarchy = cv.findContours(anotherImage, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     level1 = getContoursByLevel(contours,hierarchy, 2)
     so = sorted(level1, key = lambda x : x[0][0][1])
     so = (so[::-1])[:5] # get only 5 numbers in lower row
-    cv.drawContours(s, [contours[2]], -1, (0,255,0), 1)
+    #cv.drawContours(s, [contours[2]], -1, (0,255,0), 1)
     #cv.drawContours(s, contours, -1, (0,255,0), 1)
-    #cv.drawContours(s, so, -1, (0,255,0), 2)
+    cv.drawContours(s, so, -1, (0,255,0), 2)
     mask = np.zeros_like(thresh)
     cv.drawContours(mask, so, -1, 255, -1)
-    #showImage('original with contour',s)
+    if debug:
+        showImage('original with contour',s)
     o2digits=[]
     for digit in so:
         x,y,w,h = cv.boundingRect(digit)
@@ -126,9 +128,11 @@ def GetO2Numbers(image):
         out = np.zeros_like(thresh)
         out[mask == 255] = img[mask == 255]
         out = (255 - out)
-        #showImage('original with contour',roi)
+        if debug:
+            showImage('original with contour',roi)
 
-        print(RecogniseDigit(roi))
+        if debug:
+            print(RecogniseDigit(roi))
         o2digits.append((RecogniseDigit(roi)))
     return o2digits
 
