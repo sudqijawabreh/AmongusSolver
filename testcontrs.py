@@ -10,15 +10,17 @@ def testO2Nums(debug):
             'o23.png',
             'o24.png',
             'red.png',
-            'nored.png']
-            #'wrong.png']
+            'nored.png',
+            'wrong1.png',
+            'wrong4.png']
     expectedValues =[[8,1,9,2,8],
                      [2,5,8,5,3],
                      [6,4,4,1,3],
                      [0,4,0,2,5],
                      [5,4,7,9,3],
-                     [5,4,7,9,3]]
-                     #[7,1,9,1,1]]
+                     [5,4,7,9,3],
+                     [9,1,4,4,4],
+                     [7,1,9,1,1]]
     #print(len(files))
     #print(len(expectedValues))
 
@@ -32,4 +34,4 @@ def testO2Nums(debug):
         else:
             print(actual)
 
-testO2Nums(False)
+testO2Nums(True)

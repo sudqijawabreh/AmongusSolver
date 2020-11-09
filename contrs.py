@@ -6,6 +6,8 @@ import time
 import pyautogui
 import imutils
 import importlib
+import math
+import pdb
 debug = True
 #moduleName = input('O2')
 #importlib.import_module(moduleName)
@@ -65,6 +67,53 @@ def RecogniseDigit(digit):
     values = (sorted(coeff,key=lambda x: x[1]))
     return values[-1][0]
 
+def GetBoxCenter(box):
+        x,y,w,h= box
+        center = [(x + (w//2)),(y+(h//2))]
+        return center
+
+def GetLowerLine(contours,diviation,imgSize):
+    centers = []
+
+    #for c1 in contours:
+    #    box1 = cv.boundingRect(c1)
+    #    print(GetBoxCenter(box1))
+    #    print(box1)
+    #    box1 = rotate_box(box1,25)
+    #    center = GetBoxCenter(box1)
+    #    centers.append(center)
+    #print(centers)
+    #return np.array(centers,dtype=np.int32).reshape((-1,1,2))
+    
+    lines = set() 
+    for c1 in contours:
+        box1 = cv.boundingRect(c1)
+        elements = set()
+        cel = []
+        box1 = rotate_box(box1,25,imgSize)
+        line = GetBoxCenter(box1)
+        sumC =  0
+        for c2 in contours:
+            box2 = cv.boundingRect(c2)
+            box2 = rotate_box(box2,25,imgSize)
+            center = GetBoxCenter(box2)
+            if abs(line[1] - center[1]) <= diviation:
+                elements.add(box2)
+                cel.append(c2)
+                sumC += center[1]
+
+        if elements not in lines:
+            avg = sumC / (len(centers) + 1)
+            lines.add(frozenset(elements))
+            centers.append((avg,cel))
+
+    centers = sorted(centers, key=lambda x: x[0], reverse = True)
+    centers = list(map(lambda x: list(x[1]), list(centers)))
+    #print(list(map(lambda x: len(x),centers)))
+
+    #breakpoint()
+    return centers
+
 
 def GetO2Numbers(image):
     #imageName = './hello.png'
@@ -103,27 +152,34 @@ def GetO2Numbers(image):
         showImage('thresh',big)
     out = np.zeros_like(big)
     out[mask == 255] = big[mask == 255]
-    kernel = np.ones((1,1),np.uint8)
-    #anotherImage = cv.dilate(out,kernel,iterations = 1)
-    #anotherImage = cv.erode(anotherImage,kernel,iterations = 1)
-    anotherImage = out
+    #kernel = np.ones((1,1),np.uint8)
+    kernel = cv.getStructuringElement(cv2.MORPH_CROSS,(1,1))
+    anotherImage = cv.dilate(out,kernel,iterations = 1)
+    anotherImage = cv.erode(anotherImage,kernel,iterations = 1)
+    #anotherImage = out
     anotherImage = (255 - anotherImage)
     #out= img[mask == 255]
     if debug:
         showImage('out',anotherImage)
     contours, hierarchy = cv.findContours(anotherImage, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     level1 = getContoursByLevel(contours,hierarchy, 2)
-    so = sorted(level1, key = lambda x : x[0][0][1])
-    so = (so[::-1])[:5] # get only 5 numbers in lower row
+    print(img.shape)
+    centers = (GetLowerLine(level1,5,(img.shape[0],img.shape[1])))[0]
+    sortedCenters = sorted(centers, key = lambda x: cv.contourArea(x), reverse = True)
+    only5 = sorted(sortedCenters[:5], key = lambda x:cv.boundingRect(x)[0])
+    
+    othercenters = []
+    #othercenters = (GetLowerLine(other))
     #cv.drawContours(s, [contours[2]], -1, (0,255,0), 1)
-    #cv.drawContours(s, contours, -1, (0,255,0), 1)
-    cv.drawContours(s, so, -1, (0,255,0), 2)
+    #cv.drawContours(s, centers[0], -1, (0,255,0), 1)
+    cv.drawContours(s, only5, -1, (0,255,0), 2)
+    #cv.polylines(s,[centers],False,(0,255,0),1)
     mask = np.zeros_like(thresh)
-    cv.drawContours(mask, so, -1, 255, -1)
+    cv.drawContours(mask, only5, -1, 255, -1)
     if debug:
         showImage('original with contour',s)
     o2digits=[]
-    for digit in so:
+    for digit in only5:
         x,y,w,h = cv.boundingRect(digit)
         roi = thresh[y:y+h,x:x+w]
         out = np.zeros_like(thresh)
@@ -164,6 +220,26 @@ def rotate_image(image, angle):
     rot_mat = cv.getRotationMatrix2D(image_center, angle, 1.0)
     result = cv.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv.INTER_LINEAR)
     return result
+
+# rotate anlge degrees around center value
+def rotate_point(point, angle,center):
+    x, y = point
+    cx , cy = center
+    x -= cx
+    y -= cy
+    xprime = x * math.cos(math.radians(angle)) - y * math.sin(math.radians(angle))
+    yprime = y * math.cos(math.radians(angle)) + x * math.sin(math.radians(angle))
+    xprime += cx
+    yprime += cy
+    return (xprime, yprime)
+
+# rotate around image center
+def rotate_box(box, angle, imgSize):
+    x,y,w,h=box
+    #center = GetBoxCenter(box) rotate around box center
+    center = (imgSize[0]/2,imgSize[1]/2)
+    xprime , yprime = rotate_point((x,y),angle,center)
+    return  (xprime,yprime,w,h)
 
 def RemoveRedOverlay(image):
     #making overlay follows this equation
