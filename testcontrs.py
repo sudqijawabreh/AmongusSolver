@@ -27,8 +27,8 @@ def testO2Nums(debug):
         actual = contrs.GetO2Numbers(img)
         if not (actual == expected):
             print('fail ' + f)
-            print('expected ' + value)
-            print('got ' + actual)
+            print('expected ' + str(expected))
+            print('got ' + str(actual))
         else:
             print(actual)
 
