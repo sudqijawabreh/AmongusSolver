@@ -176,12 +176,19 @@ def SolveO2():
     import contrs
     import cv2 as cv
     import numpy as np
-    time.sleep(2)
+    time.sleep(1)
     #Use()
     screen = pyautogui.screenshot()
-    img = cv.cvtColor(np.array(screen), cv.COLOR_RGB2GRAY)
-    print(contrs.GetO2NumKeys(img))
-    print(img.shape)
-    print(contrs.GetO2Numbers(img))
-
+    img = np.array(screen)
+    img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
+    #img = cv.imread('nored.png')
+    keys = (contrs.GetO2NumKeys(img))
+    numbers = (contrs.GetO2Numbers(img))
+    print(keys)
+    print(numbers)
+    for number in numbers:
+        pyautogui.click(keys[number])
+    #pyautogui.click(keys[-1])
+#screen = pyautogui.screenshot()
+SolveO2()
 print("hello")

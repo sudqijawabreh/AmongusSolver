@@ -9,6 +9,11 @@ import importlib
 
 #moduleName = input('O2')
 #importlib.import_module(moduleName)
+def show(image):
+    cv.imshow('image',image)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
 
 def showImage(title,image):
     cv.imshow(title,image)
@@ -34,8 +39,6 @@ def getContoursByLevel(countours,hierarchy,level):
 def RecogniseDigit(digit):
     coeff = []
     for i in range(0,10):
-        if i == 7:
-            continue
         template = cv.imread('./' +str(i) + 'o.png',0)
         ret,temp = cv.threshold(template,127,255,cv.THRESH_BINARY)
         invert = (255 - temp)
@@ -64,18 +67,22 @@ def RecogniseDigit(digit):
 
 
 def GetO2Numbers(image):
-    imageName = './o24.png'
-    s = cv.imread(imageName)
-    img = cv.imread(imageName, 0)
-    #s = image.copy()
-    #img = s.copy()
+    #imageName = './hello.png'
+    #imageName = './o25.png'
+    #s = cv.imread(imageName)
+    #img = cv.cvtColor(s,cv.COLOR_BGR2GRAY)
+    #img = cv.imread(imageName, 0)
+    s = image.copy()
+    if isRedOverlay(s):
+        s = RemoveRedOverlay(s)
+    img = cv.cvtColor(s,cv.COLOR_BGR2GRAY)
     imgArea = img.shape[0] * img.shape[1]
-    ret,thresh = cv.threshold(img,200,255,cv2.THRESH_BINARY)
+    ret,thresh = cv.threshold(img,195,255,cv2.THRESH_BINARY)
     kernel = np.ones((5,5),np.uint8)
     eroded = cv.erode(thresh,kernel,iterations = 1)
     inverted = (255 - eroded) 
     #inverted = (255 - thresh) 
-    showImage('image',inverted)
+    #showImage('image',inverted)
     contours, hierarchy = cv.findContours(inverted, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     count = 0
     areas = []
@@ -91,8 +98,8 @@ def GetO2Numbers(image):
     mask = np.zeros_like(thresh)
     cv.drawContours(mask, [areas[0][1]], -1, 255, -1)
     #img1 = cv.imread('o22.png',0)
-    ret,big = cv.threshold(img,100,255,cv.THRESH_BINARY)
-    showImage('thresh',big)
+    ret,big = cv.threshold(img,95,255,cv.THRESH_BINARY)
+    #showImage('thresh',big)
     out = np.zeros_like(big)
     out[mask == 255] = big[mask == 255]
     kernel = np.ones((1,1),np.uint8)
@@ -101,7 +108,7 @@ def GetO2Numbers(image):
     anotherImage = (255 - anotherImage)
     #out= img[mask == 255]
     cv.imwrite("./thresh.png",anotherImage)
-    showImage('out',anotherImage)
+    #showImage('out',anotherImage)
     contours, hierarchy = cv.findContours(anotherImage, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     level1 = getContoursByLevel(contours,hierarchy, 2)
     so = sorted(level1, key = lambda x : x[0][0][1])
@@ -111,7 +118,7 @@ def GetO2Numbers(image):
     #cv.drawContours(s, so, -1, (0,255,0), 2)
     mask = np.zeros_like(thresh)
     cv.drawContours(mask, so, -1, 255, -1)
-    showImage('original with contour',s)
+    #showImage('original with contour',s)
     o2digits=[]
     for digit in so:
         x,y,w,h = cv.boundingRect(digit)
@@ -126,12 +133,16 @@ def GetO2Numbers(image):
     return o2digits
 
 def GetO2NumKeys(image):
+    #img = imread('./hello.png',0)
     img = image.copy() 
+    img = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
     ret,thresh = cv.threshold(img,127,255,cv2.THRESH_BINARY)
     meth = 'cv.TM_CCOEFF'
     numLocations = []
-    for i in range(0,10):
-        template = cv.imread('./' +str(i) + 'n.png',0)
+    files = ['./' + str(i) + 'n.png' for i in range (10)]
+    files.append('tick.png')
+    for file in files:
+        template = cv.imread(file, 0)
         ret,temp = cv2.threshold(template,127,255,cv2.THRESH_BINARY)
         w, h = temp.shape[::-1]
         method = eval(meth)
@@ -149,4 +160,19 @@ def rotate_image(image, angle):
     result = cv.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv.INTER_LINEAR)
     return result
 
-GetO2Numbers('')
+def RemoveRedOverlay(image):
+    #making overlay follows this equation
+    # p = alpha*255 + beta*value where beta = 1 - alpah
+    #reverse it as value = (p - (alpha*255)) / beta
+    alpha = 0.3719806763285024 # solved for alpha from examples red.png and nored.png
+    beta = 1 - alpha
+    red = np.zeros_like(image)
+    red[:,:,2] = 255
+    original = (image - (alpha*red)) / beta
+    return original.astype(np.uint8)
+
+def isRedOverlay(img):
+    return np.all(img[:,:,2] > 45)
+
+
+
