@@ -98,14 +98,15 @@ def GetO2Numbers(image):
     mask = np.zeros_like(thresh)
     cv.drawContours(mask, [areas[0][1]], -1, 255, -1)
     #img1 = cv.imread('o22.png',0)
-    ret,big = cv.threshold(img,95,255,cv.THRESH_BINARY)
+    ret,big = cv.threshold(img,97,255,cv.THRESH_BINARY)
     if debug:
         showImage('thresh',big)
     out = np.zeros_like(big)
     out[mask == 255] = big[mask == 255]
     kernel = np.ones((1,1),np.uint8)
-    anotherImage = cv.erode(out,kernel,iterations = 1)
-    #anotherImage = out
+    #anotherImage = cv.dilate(out,kernel,iterations = 1)
+    #anotherImage = cv.erode(anotherImage,kernel,iterations = 1)
+    anotherImage = out
     anotherImage = (255 - anotherImage)
     #out= img[mask == 255]
     if debug:
