@@ -124,6 +124,7 @@ def GetO2Numbers(image):
     s = image.copy()
     if isRedOverlay(s):
         s = RemoveRedOverlay(s)
+        #show(s)
     img = cv.cvtColor(s,cv.COLOR_BGR2GRAY)
     imgArea = img.shape[0] * img.shape[1]
     ret,thresh = cv.threshold(img,195,255,cv2.THRESH_BINARY)

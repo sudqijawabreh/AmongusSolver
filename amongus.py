@@ -11,7 +11,7 @@ def adminSwipe():
     homecard = pyautogui.Point(x=530, y=583)
     second = pyautogui.Point(x=347, y=296)
     final = pyautogui.Point(x=1148, y=285)
-    time.sleep(2)
+    time.sleep(1)
     Use()
     pyautogui.click(homecard.x, homecard.y)
     time.sleep(1)
@@ -42,7 +42,6 @@ def FixWires():
     x1 = 385
     x2 = 960
     y1 = 190
-    time.sleep(2)
     Use()
     wires = GetWireColors(x1,x2,y1,diff)
     sortedWires = sorted(wires, key = lambda w: (w[1],w[0][0]))
@@ -51,7 +50,6 @@ def FixWires():
 
 def Trash():
     exitTrash = pyautogui.Point(x=330, y=91)
-    time.sleep(2)
     Use()
     init = pyautogui.Point(x=900, y=297)
     final = pyautogui.Point(x=911, y=515)
@@ -65,7 +63,7 @@ def Trash():
 
 
 def Download():
-    time.sleep(2)
+    time.sleep(1)
     Use()
     init = pyautogui.Point(x=677, y=467)
     pyautogui.click(init.x, init.y)
@@ -103,13 +101,15 @@ def ClickBoxes(boxes):
         time.sleep(0.2)
 
 def Reactor():
+    time.sleep(1)
+    Use()
     for i in range(1,6):
         boxes = GetBoxes(i)
         time.sleep(0.5)
         ClickBoxes(boxes)
 
 def Cycles():
-    time.sleep(2)
+    Use()
     circelToButtonDiffY = 218 - 183
     circelToButtonDiffX = 876 - 574
     diffY = 375 - 183
@@ -136,7 +136,6 @@ def AIStartNumber():
     import cv2 as cv
     import numpy as np
     from matplotlib import pyplot as plt
-    time.sleep(1)
     Use()
     screen = pyautogui.screenshot()
     img = cv.cvtColor(np.array(screen), cv.COLOR_RGB2GRAY)
@@ -176,19 +175,63 @@ def SolveO2():
     import contrs
     import cv2 as cv
     import numpy as np
-    time.sleep(1)
-    #Use()
+    Use()
     screen = pyautogui.screenshot()
     img = np.array(screen)
     img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-    img = cv.imread('wrong4.png')
+    cv.imwrite('current.png',img)
+    #img = cv.imread('o22.png')
+    contrs.debug = False
     keys = (contrs.GetO2NumKeys(img))
     numbers = (contrs.GetO2Numbers(img))
     print(keys)
     print(numbers)
     for number in numbers:
         pyautogui.click(keys[number])
-    #pyautogui.click(keys[-1])
+    pyautogui.click(keys[-1])
 #screen = pyautogui.screenshot()
-SolveO2()
+#SolveO2()
 print("hello")
+
+import keyboard
+
+text_to_print='default_predefined_text'
+shortcutFixWirings = 'alt+f' #define your hot-key
+shortcutSolveO2 = 'alt+o' #define your hot-key
+shortcutAdminSwipeCard = 'alt+c' #define your hot-key
+
+def on_triggered(): #define your function to be executed on hot-key press
+    FixWires()
+    print('FixWires')
+
+def on_triggeredO2(): #define your function to be executed on hot-key press
+    SolveO2()
+    print('O2')
+
+def on_triggeredAdminSwipeCard(): #define your function to be executed on hot-key press
+    adminSwipe()
+    print('Admin')
+
+def on_triggeredTrash(): #define your function to be executed on hot-key press
+    Trash()
+    print('Trash')
+
+def on_triggeredReactor(): #define your function to be executed on hot-key press
+    Reactor()
+    print('Reactor')
+
+def on_triggeredStartNumber(): #define your function to be executed on hot-key press
+    AIStartNumber()
+    print('Start Number')
+
+def on_triggeredCycles(): #define your function to be executed on hot-key press
+    Cycles()
+    print('Start Number')
+
+keyboard.add_hotkey(shortcutFixWirings, on_triggered)
+keyboard.add_hotkey(shortcutSolveO2, on_triggeredO2)
+keyboard.add_hotkey(shortcutAdminSwipeCard, on_triggeredAdminSwipeCard) #<-- attach the function to hot-key
+keyboard.add_hotkey('alt+t',on_triggeredTrash)
+keyboard.add_hotkey('alt+r',on_triggeredReactor)
+keyboard.add_hotkey('alt+n',on_triggeredStartNumber)
+keyboard.add_hotkey('alt+q',on_triggeredCycles)
