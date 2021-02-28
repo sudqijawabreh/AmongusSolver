@@ -2,6 +2,9 @@ import pyautogui
 import keyboard
 import copy
 import time
+import numpy as np
+import cv2 as cv
+import contrs
 def Use():
     use = pyautogui.Point(x=1273, y=658)
     pyautogui.click(use.x, use.y)
@@ -39,9 +42,9 @@ def ConnectWires(wires):
 
 def FixWires():
     diff = 132
-    x1 = 385
+    x1 = 400
     x2 = 960
-    y1 = 190
+    y1 = 193
     Use()
     wires = GetWireColors(x1,x2,y1,diff)
     sortedWires = sorted(wires, key = lambda w: (w[1],w[0][0]))
@@ -172,9 +175,6 @@ def AIStartNumber():
         pyautogui.click(location[0], location[1])
 
 def SolveO2():
-    import contrs
-    import cv2 as cv
-    import numpy as np
     Use()
     screen = pyautogui.screenshot()
     img = np.array(screen)
@@ -235,3 +235,48 @@ keyboard.add_hotkey('alt+t',on_triggeredTrash)
 keyboard.add_hotkey('alt+r',on_triggeredReactor)
 keyboard.add_hotkey('alt+n',on_triggeredStartNumber)
 keyboard.add_hotkey('alt+q',on_triggeredCycles)
+
+def on_screenshot():
+    contrs.debug = False
+    #for i in range(6):
+    screen = pyautogui.screenshot()
+    img = np.array(screen)
+    img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
+    #img = cv.imread('filter_empty.png')
+    #img = cv.imread('filter_2.png')
+    #img = cv.imread('ast.png')
+    #centers = contrs.test(img)
+    for i in range(10):
+        screen = pyautogui.screenshot()
+        img = np.array(screen)
+        img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
+        #img = cv.imread('filter_empty.png')
+        #img = cv.imread('ast.png')
+        centers = contrs.test(img)
+        if len(centers) == 0:
+            return
+        x,y= centers
+        #for (x,y) in centers:
+        pyautogui.moveTo(x, y) 
+        #pyautogui.dragTo(860, 514, duration = 0.15) 
+        pyautogui.dragTo(300, 388, duration = 0.3) 
+
+    #edges = cv.resize(edges,(edges.shape[1]*2,edges.shape[0]*2))
+    #kernel = np.ones((3,3),np.uint8)
+    #erosion = cv.erode(edges,kernel,iterations = 1)
+    #cv.imshow('erosion',erosion)
+    #cv.waitKey(0)
+    #erosion = cv.resize(erosion,(erosion.shape[1]//2,erosion.shape[0]//2))
+    #cv.imshow('resized erosion',erosion)
+    #cv.waitKey(0)
+    #cv.destroyAllWindows()
+
+
+keyboard.add_hotkey('alt+s',on_screenshot)
+
+#cv.imshow('output',img)
+#cv.waitKey(0)
+#cv.imshow('output',source)
+#cv.waitKey(0)
+#cv.destroyAllWindows()
+

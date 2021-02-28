@@ -257,4 +257,101 @@ def isRedOverlay(img):
     return np.all(img[:,:,2] > 45)
 
 
+def GetEstimation(contrs):
+    approxes = []
+    for cnt in contrs:
+        epsilon = 0.01*cv2.arcLength(cnt,True)
+        approx = cv2.approxPolyDP(cnt,epsilon,True)
+        if len(approx) <= 4:
+            approxes.append(approx)
+    return approxes
+
+def test(img):
+    img1 = cv.cvtColor(img.copy(),cv.COLOR_BGR2GRAY)
+    edges = cv.Canny(img1,100,200)
+    contours, hierarchy = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    wRatio = img1.shape[1]/1366
+    hRatio = img.shape[0]/768
+    ih = 701 - 67
+    iw = 1000 -  495
+    x = int(495 * wRatio) +5
+    y = int(67 * hRatio) +5
+    h = int(ih * hRatio) - 7
+    w = int(iw * wRatio) -7
+
+
+    edges = cv.resize(edges,(edges.shape[1]*2,edges.shape[0]*2))
+    kernel = np.ones((3,3),np.uint8)
+    erosion = cv.dilate(edges,kernel,iterations = 2)
+    erosion = cv.erode(erosion,kernel,iterations = 1)
+    erosion = cv.resize(erosion,(erosion.shape[1]//2,erosion.shape[0]//2))
+    #cv.imshow('output',erosion)
+    #cv.waitKey(0)
+    edges = erosion
+
+    #approxes = GetEstimation(contours)
+    #maxArea= -1
+    #largestBox = []
+    #sortedApproxes = sorted(contours,key=lambda x: cv.contourArea(x), reverse=True)[:50]
+    #boxWithLeafes = sortedApproxes[0]
+    #boxToEnter = sortedApproxes[1]
+    #cv.drawContours(img, sortedApproxes, -1, (0,255,0), 2)
+    #show(img)
+    #x,y,w,h = cv.boundingRect(boxWithLeafes)
+    firstRect = edges[y:y+h, x:x+w] 
+    the = img1[y:y+h, x:x+w] 
+    ret,temp = cv.threshold(the,120,255,cv.THRESH_BINARY)
+    temp = (255 - temp)
+    kernel = np.ones((7,7),np.uint8)
+    for i in range(9):
+        temp = cv2.morphologyEx(temp, cv2.MORPH_CLOSE, kernel)
+    #output = cv.copyMakeBorder(closing, 0, 0, 0, 0, cv.BORDER_CONSTANT,value=0)
+    #show(output)
+
+    rect = temp
+    orgRect = img[y:y+h, x:x+w]
+    contours, hierarchy = cv.findContours(rect, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    level2 = sorted((contours),key=lambda x: cv.contourArea(x), reverse=True)[:6]
+    rectArea = x * h
+    level2 = list(filter(lambda x : cv.contourArea(x) < 0.5 * rectArea, level2))
+    cv.drawContours(orgRect, level2, -1, (0,255,0), 2)
+    if debug :
+        show(rect)
+        show(orgRect)
+    if (len(level2) <= 1):
+        return []
+    if debug:
+        boundingRects = [cv.boundingRect(contr) for contr in level2][:6]
+        for boundRect in boundingRects:
+            cv.rectangle(orgRect,boundRect,(0,0,255),1)
+        #centers = [GetBoxCenter(box) for box in boundingRects]
+        #centers = [(x1+x,y1+y) for (x1,y1) in centers]
+        show(edges)
+        #allImageRect = [(x1+x,y1+y,w1,h1)for (x1,y1,w1,h1) in boundingRects]
+        #for boundRect in allImageRect:
+        #    cv.rectangle(img,boundRect,(0,0,255),1)
+    toReturn= []
+    for l in level2[:6]:
+        M = cv.moments(l)
+        cX = int(M["m10"] / (M["m00"] + 0.00000001))
+        cY = int(M["m01"] / (M["m00"] + 0.00000001))
+        toReturn.append((cX+x,cY+y))
+    if debug:
+        for r in toReturn:
+            img[r[1]][r[0]] = [0,255,0]
+            img[r[1]+1][r[0]+1] = [0,255,0]
+            img[r[1]-1][r[0]-1] = [0,255,0]
+            img[r[1]+1][r[0]-1] = [0,255,0]
+            img[r[1]-1][r[0]+1] = [0,255,0]
+        show(img)
+    #toReturn = [ l[0][0] for l in level2[:6]]
+    #toReturn = [ (x1+x,y1+y) for (x1,y1) in toReturn]
+    #print(level2[0][0][0])
+    #print('edges shape')
+    #print(len( level2))
+    #print(len( level2[0]))
+    #print(len( level2[0][0]))
+    print(toReturn)
+    return toReturn[0]
+    #cv.imshow('output',orgRect)
 
