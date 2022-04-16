@@ -25,7 +25,7 @@ def testO2Nums(debug):
     #print(len(expectedValues))
 
     for (f,expected) in zip(files,expectedValues):
-        img = cv.imread('./'+f)
+        img = cv.imread('./images/'+f)
         actual = contrs.GetO2Numbers(img)
         if not (actual == expected):
             print('fail ' + f)

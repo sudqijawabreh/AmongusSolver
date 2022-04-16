@@ -41,7 +41,7 @@ def getContoursByLevel(countours,hierarchy,level):
 def RecogniseDigit(digit):
     coeff = []
     for i in range(0,10):
-        template = cv.imread('./' +str(i) + 'o.png',0)
+        template = cv.imread('./images/' +str(i) + 'o.png',0)
         ret,temp = cv.threshold(template,127,255,cv.THRESH_BINARY)
         invert = (255 - temp)
         coords = cv.findNonZero(invert)
@@ -116,8 +116,8 @@ def GetLowerLine(contours,diviation,imgSize):
 
 
 def GetO2Numbers(image):
-    #imageName = './hello.png'
-    #imageName = './o25.png'
+    #imageName = './images/hello.png'
+    #imageName = './images/o25.png'
     #s = cv.imread(imageName)
     #img = cv.cvtColor(s,cv.COLOR_BGR2GRAY)
     #img = cv.imread(imageName, 0)
@@ -195,13 +195,13 @@ def GetO2Numbers(image):
     return o2digits
 
 def GetO2NumKeys(image):
-    #img = imread('./hello.png',0)
+    #img = imread('./images/hello.png',0)
     img = image.copy() 
     img = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
     ret,thresh = cv.threshold(img,127,255,cv2.THRESH_BINARY)
     meth = 'cv.TM_CCOEFF'
     numLocations = []
-    files = ['./' + str(i) + 'n.png' for i in range (10)]
+    files = ['./images/' + str(i) + 'n.png' for i in range (10)]
     files.append('tick.png')
     for file in files:
         template = cv.imread(file, 0)

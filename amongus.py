@@ -273,6 +273,8 @@ def on_screenshot():
 
 
 keyboard.add_hotkey('alt+s',on_screenshot)
+print("Press ESC to stop.")
+keyboard.wait('esc')
 
 #cv.imshow('output',img)
 #cv.waitKey(0)
