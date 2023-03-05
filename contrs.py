@@ -137,16 +137,19 @@ def GetO2Numbers(image):
     contours, hierarchy = cv.findContours(inverted, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     count = 0
     areas = []
+    print(debug)
+    print(len(contours))
     for i,cont in zip(range(len(contours)),contours):
         area = cv.contourArea(cont)
         ratio = imgArea / (area+1)
-        #print(ratio)
-        if (ratio > 30  and ratio < 33):
-            #print('bingo')
-            areas.append((i,cont))
+        print(ratio)
+        if (ratio > 30):
+            print('bingo')
+        areas.append((i,cont))
     #cv.drawContours(s, [areas[0][1]], -1, (0,255,0), 3)
     mask = np.zeros_like(thresh)
-    cv.drawContours(mask, [areas[0][1]], -1, 255, -1)
+    cv.drawContours(mask, contours, -1, 255, -1)
+    #cv.drawContours(mask, [areas[0][1]], -1, 255, -1)
     #img1 = cv.imread('o22.png',0)
     ret,big = cv.threshold(img,97,255,cv.THRESH_BINARY)
     if debug:
@@ -202,7 +205,7 @@ def GetO2NumKeys(image):
     meth = 'cv.TM_CCOEFF'
     numLocations = []
     files = ['./images/' + str(i) + 'n.png' for i in range (10)]
-    files.append('tick.png')
+    files.append('./images/tick.png')
     for file in files:
         template = cv.imread(file, 0)
         ret,temp = cv2.threshold(template,127,255,cv2.THRESH_BINARY)

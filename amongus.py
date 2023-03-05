@@ -181,7 +181,7 @@ def SolveO2():
     img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
     cv.imwrite('current.png',img)
     #img = cv.imread('o22.png')
-    contrs.debug = False
+    contrs.debug = True
     keys = (contrs.GetO2NumKeys(img))
     numbers = (contrs.GetO2Numbers(img))
     print(keys)
